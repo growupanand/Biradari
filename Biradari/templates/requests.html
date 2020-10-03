@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br/>
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                Requests
+            </div>
+            <div class="list-group-flush">
+                {% if not user['requests'] == None %}
+                {% for request in user['requests'] %}
+                <div class="list-group-item">
+                    <p>
+                    <div class="form-inline  float-right">
+                        <button onclick="confirm_request(this)" value="{{request['_id']}}" type="button" class="btn btn-success">CONFIRM</button>
+                    </div>
+                    <a href="/profile/{{request['from_username']}}">{{request['name']}}</a> wants to add you as <b>{{request['type']}}</b>
+                    </p>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+function confirm_request(e) {
+id = e.value
+$.ajax({
+    type:'POST',
+        url:'api/confirm_request',
+        data:{'id':id},
+        success: function (response) {
+                e.parentElement.parentElement.remove();
+        }
+})
+}
+{% endblock %}

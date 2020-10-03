@@ -1,0 +1,29 @@
+<div class="modal" id="select_user_modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+
+          <div class="row">
+              <div class="col-lg-3">
+                  <div class="form-group">
+                      <button data-dismiss="modal" class="btn btn-outline-dark">CLOSE</button>
+                  </div>
+              </div>
+              <div class="col-lg-9">
+                  <form name="select_user_form" onsubmit="submit_select_user_form(this)">
+                  <div class="form-group">
+                      <div class="row">
+                        <div class="col-9"><input class="form-control" type="text" placeholder="Type Name or username" name="query"/></div>
+                        <div class="col-3"><button type="submit" class="btn btn-primary btn-block">FIND</button> </div>
+                      </div>
+                  </div>
+                  </form>
+              </div>
+          </div>
+              <br/>
+              <div class="list-group" id="query_result_list">
+              </div>
+      </div>
+    </div>
+  </div>
+</div>

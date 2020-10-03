@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}{{user['username']}}{% endblock %}
+{% block content %}
+<br/>
+<div class="row">
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="text-capitalize">{{user['full_name']}}</h4>
+                <small>@{{user['username']}}</small>
+            </div>
+            <div class="card-body list-group-flush">
+                {% for item in ('gender','dob','location') %}
+                <div class="list-group-item">
+                    <div class="row">
+                        <div class="col text-uppercase">{{item}}</div>
+                        <div class="col">{{user[item]}}</div>
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div><br/>
+    </div>
+
+    <div class="col-lg-7">
+    <ul id="posts_list" class="list-group">
+    </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+function get_posts() {
+$.ajax({
+url: '/api/get_posts',
+type: 'POST',
+data: {'username':'{{user['username']}}'},
+dataType: 'JSON',
+success: function (response) {
+
+if (response.length > 0) {
+newest_post_timestamp = response[0].raw_timestamp;
+for (i in response) {
+html = '<li class="list-group-item"><p><small class="float-right">'+format_datetime(response[i].raw_timestamp)+'</small><a class="text-capitalize" href="/profile/'+ response[i].username + '">'+response[i].user_full_name+'</a></p><p>'+response[i].content+'</p></li>'
+$(html).hide().appendTo('#posts_list').slideDown();
+oldest_post_timestamp = response[i].raw_timestamp;
+}
+
+}
+}
+})
+}
+
+get_posts();
+{% endblock %}

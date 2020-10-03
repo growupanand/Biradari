@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block content %}
+<br/>
+<div class="row justify-content-center">
+
+    <div class="col-sm-7 ">
+        <form onsubmit="wall_post_submit(this)">
+    <div class="row">
+        <div class="form-group  col-sm-8"><textarea name="content" class="form-control"></textarea></div>
+        <div class="form-group text-right col-sm-4"><button type="submit" class="btn btn-lg btn-primary">POST</button></div>
+    </div>
+    </form>
+        <div class="form-group">
+            <button class="btn btn-outline-info" type="button" onclick="get_new_posts()">REFRESH</button>
+        </div>
+        <ul id="posts_list" class="list-group">
+        </ul>
+        <br/>
+        <div class="form-group text-center">
+            <button class="btn btn-secondary" type="button" onclick="get_old_posts()">MORE</button>
+        </div>
+    </div>
+
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+
+newest_post_timestamp = null
+oldest_post_timestamp = null
+
+
+function get_posts() {
+$.ajax({
+url: '/api/get_posts',
+dataType: 'JSON',
+success: function (response) {
+
+if (response.length > 0) {
+newest_post_timestamp = response[0].raw_timestamp;
+for (i in response) {
+html = '<li class="list-group-item"><p><small class="float-right">'+format_datetime(response[i].raw_timestamp)+'</small><a class="text-capitalize" href="/profile/'+ response[i].username + '">'+response[i].user_full_name+'</a></p><p>'+response[i].content+'</p></li>'
+$(html).hide().appendTo('#posts_list').slideDown();
+oldest_post_timestamp = response[i].raw_timestamp;
+}
+
+}
+}
+})
+}
+
+function get_new_posts() {
+$.ajax({
+url: '/api/get_posts',
+type: 'POST',
+data: {'newest_post_timestamp':newest_post_timestamp},
+dataType: 'JSON',
+success: function (response) {
+    if (response.length > 0) {
+        newest_post_timestamp = response[0].raw_timestamp;
+        i = response.length
+        console.log(response)
+        for (x in response) {
+        i = i-1;
+        html = '<li class="list-group-item"><p><small class="float-right">'+format_datetime(response[i].raw_timestamp)+'</small><a class="text-capitalize" href="/profile/'+ response[i].username + '">'+response[i].user_full_name+'</a></p><p>'+response[i].content+'</p></li>'
+        $(html).hide().prependTo('#posts_list').slideDown();
+        }
+    }
+}
+})
+}
+
+function get_old_posts() {
+$.ajax({
+url: '/api/get_posts',
+type: 'POST',
+data: {'oldest_post_timestamp':oldest_post_timestamp},
+dataType: 'JSON',
+success: function (response) {
+    if (response.length > 0) {
+        console.log(response)
+        for (i in response) {
+        html = '<li class="list-group-item"><p><small class="float-right">'+format_datetime(response[i].raw_timestamp)+'</small><a class="text-capitalize" href="/profile/'+ response[i].username + '">'+response[i].user_full_name+'</a></p><p>'+response[i].content+'</p></li>'
+        $(html).hide().appendTo('#posts_list').slideDown();
+        oldest_post_timestamp = response[i].raw_timestamp;
+        }
+    }
+}
+})
+}
+
+
+function wall_post_submit(e) {
+    event.preventDefault();
+    content = e.content.value;
+    $.ajax({
+        url: '/api/post',
+        data: {'content':content},
+        type: 'POST',
+        dataType: 'JSON',
+        success: function (response) {
+                    if (response.result == true) {
+                    posts_list = document.getElementById('posts_list')
+                    html = '<li class="list-group-item"><p><small class="float-right">NOW</small><a class="text-capitalize" href="/profile">{{session['login_user']['full_name']}}</a></p><p>'+content+'</p></li>'
+                    $(html).hide().prependTo('#posts_list').slideDown();
+                    }
+                    else {alert(response.msg)}
+                }
+    })
+}
+
+get_posts()
+
+{% endblock %}

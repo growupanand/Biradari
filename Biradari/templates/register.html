@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Register New User{% endblock %}
+{% block content %}
+<br/>
+<div class="card">
+    <div class="card-header"><h2>Create New User</h2></div>
+<div class="card-body">
+<form name="register_form" onsubmit="submit_register_form(this)">
+        <div class="form-group row">
+        <label class="col-sm-2 col-form-label" for="username">Username</label>
+        <div class="col-sm-6">
+            <input class="form-control" id="username" name="username" type="text" required/>
+        </div>
+        </div>
+        <div class="form-group row">
+        <label class="col-sm-2 col-form-label" for="password">Password</label>
+        <div class="col-sm-6">
+            <input class="form-control" id="password" name="password" type="password" required/>
+        </div>
+        </div>
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Name</label>
+        <div class="col-sm-5">
+            <input class="form-control" name="first_name" type="text" placeholder="First Name" required/>
+        </div>
+        <div class="col-sm-5">
+            <input class="form-control" name="last_name" type="text" placeholder="Last Name" required/>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label" for="gender">Gender</label>
+        <div class="col-sm-6">
+            <select class="form-control" id="gender" name="gender" required>
+                <option value="False" selected>Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label" for="dob">Date of Birth</label>
+        <div class="col-sm-6">
+            <input class="form-control" id="dob" name="dob" type="date" required/>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label" for="location">Location</label>
+        <div class="col-sm-6">
+            <input class="form-control" id="location" name="location" type="text" required/>
+        </div>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary btn-block btn-lg">REGISTER</button>
+    </div>
+
+</form>
+</div>
+</div>
+<p class="text-center">OR<br/>
+        <a class="btn btn-light btn-lg" href="/login">Login</a></p>
+{% endblock %}
+
+{% block javascript %}
+
+//function submit_register_form to ajax
+function submit_register_form(form) {
+    event.preventDefault();
+    var data = $(this).serializeArray();
+    $.ajax({
+        type: 'POST',
+        url: 'api/register',
+        data: $(form).serialize(),
+        dataType: 'json',
+        success: function(response) {
+            if (response.usercreated == true) {
+                alert('user created successfully!');
+            }   else { alert('user is already exist or required field is empty.') }
+        }
+    });
+}
+
+{% endblock %}

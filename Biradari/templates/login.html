@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<br/>
+<div class="row justify-content-md-center">
+    <div class="col col-lg-7">
+<div class="card">
+<div class="card-body">
+<form name="login_form" onsubmit="submit_login_form(this)">
+    <input type="hidden" name="next" value="{{ request.args.get('next', '') }}"/>
+        <div class="form-group row">
+        <label class="col-sm-4 col-form-label" for="username">Username</label>
+        <div class="col-sm-6">
+            <input class="form-control" id="username" name="username" type="text" required/>
+        </div>
+        </div>
+        <div class="form-group row">
+        <label class="col-sm-4 col-form-label" for="password">Password</label>
+        <div class="col-sm-6">
+            <input class="form-control" id="password" name="password" type="password" required/>
+        </div>
+        </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary btn-block btn-lg">LOGIN</button>
+    </div>
+
+</form>
+</div>
+</div>
+        <p class="text-center">OR<br/>
+        <a class="btn btn-light btn-lg" href="/register">Register</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+// function to get argument from current url
+function get_url_arg(n) {
+var url_string = window.location.href;
+var url = new URL(url_string);
+if (url.searchParams.has(n)) {
+return url.searchParams.get(n);
+}
+else {return false;}
+}
+
+//function submit_login_form to ajax
+function submit_login_form(form) {
+
+    event.preventDefault();
+    var data = $(this).serializeArray(); // convert form to array
+    $.ajax({
+        type: 'POST',
+        url: 'api/login',
+        data: $(form).serialize(),
+        dataType: 'json',
+        success: function(response) {
+            if (response.loggedin == true) {
+                next_url = get_url_arg('next');
+                if (next_url != false) {window.location.replace(next_url)}
+                else {window.location.replace("/")}
+            } else {alert('username or password is wrong.');}
+        }
+    });
+
+}
+{% endblock %}

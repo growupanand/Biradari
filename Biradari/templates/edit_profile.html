@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}{{session['login_user']['username']}}{% endblock %}
+{% block content %}
+<br/>
+<div class="row">
+    <div class="col-lg-6">
+        <form name="update_profile_form" onsubmit="submit_update_profile_form(this)">
+            <div class="card">
+                <div class="card-header">
+                    <a class="btn btn-link" href="/profile">BACK</a>
+                    <h4 class="float-right">EDIT PROFILE</h4>
+                </div>
+                <div class="card-body list-group-flush">
+                    <div class="list-group-item">
+                        <div class="row">
+                            <label class="col text-uppercase ">username</label>
+                            <div class="col">
+                                <input class="form-control" type="text" value="{{user['username']}}" disabled>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="row">
+                            <label class="col text-uppercase ">First Name</label>
+                            <div class="col">
+                                <input name="first_name" class="form-control" type="text" value="{{user['first_name']}}"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="row">
+                            <label class="col text-uppercase ">Last Name</label>
+                            <div class="col">
+                                <input name="last_name" class="form-control" type="text" value="{{user['last_name']}}"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="row">
+                            <label class="col text-uppercase ">Gender</label>
+                            <div class="col">
+                                <select class="form-control" name="gender" required>
+                                    {%for option in ('male', 'female') %}
+                                    {% set selected = '' %}
+                                    {% if option == user['gender'] %}
+                                    {% set selected = 'selected'%}
+                                    {% endif %}
+                                    <option value="{{option}}" {{selected}}>{{option}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="row">
+                            <label class="col text-uppercase ">Date of Birth</label>
+                            <div class="col">
+                                <input name="dob" class="form-control" type="date" value="{{user['dob']}}" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="row">
+                            <label class="col text-uppercase ">Location</label>
+                            <div class="col">
+                                <input name="location" class="form-control" type="text" value="{{user['location']}}"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-lg btn-block">UPDATE</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+//function submit form to ajax
+function submit_update_profile_form(form) {
+
+event.preventDefault();
+var data = $(this).serializeArray(); // convert form to array
+$.ajax({
+type: 'POST',
+url: 'api/update_profile',
+data: $(form).serialize(),
+dataType: 'json',
+success: function(response) {
+if (response.result == true) {window.location.replace("/profile")}
+else {alert(respose)}
+}
+});
+
+}
+
+{% endblock %}
