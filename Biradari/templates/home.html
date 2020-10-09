@@ -5,10 +5,10 @@
 
     <div class="col-sm-7 ">
         <form onsubmit="wall_post_submit(this)">
-    <div class="row">
-        <div class="form-group  col-sm-8"><textarea name="content" class="form-control"></textarea></div>
-        <div class="form-group text-right col-sm-4"><button type="submit" class="btn btn-lg btn-primary">POST</button></div>
-    </div>
+            <div class="row">
+                <div class="form-group  col-sm-8"><textarea name="content" class="form-control"></textarea></div>
+                <div class="form-group text-right col-sm-4"><button type="submit" class="btn btn-lg btn-primary">POST</button></div>
+            </div>
     </form>
         <div class="form-group">
             <button class="btn btn-outline-info" type="button" onclick="get_new_posts()">REFRESH</button>
@@ -26,6 +26,7 @@
 {% endblock %}
 
 {% block javascript %}
+document.body.style.backgroundColor= "#f8f9fa"
 
 newest_post_timestamp = null
 oldest_post_timestamp = null
