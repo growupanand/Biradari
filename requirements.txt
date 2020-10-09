@@ -2,4 +2,3 @@ Flask
 PyMongo
 dnspython
 gunicorn
-os
