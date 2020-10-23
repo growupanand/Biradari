@@ -31,65 +31,40 @@
   </div>
 </div>
 
-
 <br/>
+<p><a class="btn btn-link" href="/biradari">BACK</a></p>
+
+<h5 class="text-center">EDIT FAMILY</h5>
+<div class="list-group list-group-flush">
+    <div class="list-group-item ">
 <div class="row">
-    <div class="col-lg-6">
-
-        <div class="card">
-            <div class="card-header">
-                <a href="/biradari">< BACK</a>
-                <h5 class="float-right">EDIT FAMILY</h5>
-            </div>
-        <div class="list-group-flush">
-            <div class="list-group-item"><div class="row">
-                <div class="col text-capitalize">Father</div>
-                <div class="col">
-                    <span id="father"></span>
-                    <button onclick="select_user(update_father)" class="btn btn-sm btn-link">CHANGE</button>
-                </div>
-            </div></div>
-
-            <div class="list-group-item"><div class="row">
-                <div class="col text-capitalize">Mother</div>
-                <div class="col">
-                    <span id="mother"></span>
-                    <button onclick="select_user(update_mother)" class="btn btn-sm btn-link">CHANGE</button>
-                </div>
-            </div></div>
-
-            <div class="list-group-item"><div class="row">
-                <div class="col text-capitalize">Spouse</div>
-                <div class="col">
-                    <span id="spouse"></span>
-                    <button onclick="select_user(update_spouse)" class="btn btn-sm btn-link">CHANGE</button>
-                </div>
-            </div></div>
-
-            <div class="list-group-item"><div class="row">
-                <div class="col-lg-4 text-capitalize"><p>
-
-                    Sibilings</p></div>
-                <div class="col-lg-8">
-                    <p><button onclick="select_user(add_sibiling)" class="btn btn-sm btn-outline-info">+ ADD</button></p>
-                    <div id="sibiling_list" class="card list-group list-group-flush">
-
-                        {% for sibiling in user['family']['sibilings']%}
-                        <div class="list-group-item">
-                            <button onclick="delete_sibiling(this,'{{sibiling['username']}}')" class="btn btn-sm btn-outline-danger float-right">DELETE</button>
-                            <a href="/profile/{{sibiling['username']}}">{{sibiling['name']}}</a>
-                        </div>
-                        {% endfor %}
-
-                    </div>
-                </div>
-            </div></div>
-        </div>
-        </div>
-
-
+    <div class="col text-capitalize">Father</div>
+    <div class="col">
+        <span id="father"></span>
+        <button onclick="select_user(update_father)" class="btn btn-sm btn-link">CHANGE</button>
     </div>
 </div>
+    </div>
+    <div class="list-group-item">
+<div class="row">
+    <div class="col text-capitalize">Mother</div>
+    <div class="col">
+        <span id="mother"></span>
+        <button onclick="select_user(update_mother)" class="btn btn-sm btn-link">CHANGE</button>
+    </div>
+</div>
+    </div>
+<div class="list-group-item">
+<div class="row">
+    <div class="col text-capitalize">Spouse</div>
+    <div class="col">
+        <span id="spouse"></span>
+        <button onclick="select_user(update_spouse)" class="btn btn-sm btn-link">CHANGE</button>
+    </div>
+</div>
+</div>
+</div>
+
 {% endblock %}
 
 {% block javascript %}
@@ -145,35 +120,5 @@ function update_spouse() {
         }
     })
 }//end function
-
-
-function add_sibiling() {
-    sibiling_username = selected_username
-    $.ajax({
-        type:'POST',
-        url:'api/add_sibiling',
-        data:{'username':sibiling_username},
-        dataType: 'json',
-        success: function (response) {
-                if (response.result == true) {
-                html = document.getElementById('sibiling_list').innerHTML
-                html +=  '<div class="list-group-item"><button onclick="delete_sibiling(this,\''+selected_username+'\')" class="btn btn-sm btn-outline-danger float-right">DELETE</button><a href="/profile/'+selected_username+'">'+selected_username+'</a></div>'
-                document.getElementById('sibiling_list').innerHTML = html
-                } else {alert(response.msg)}
-        }
-    })
-}//end function
-
-
-function delete_sibiling(e,username) {
-    $.ajax({
-        type:'POST',
-        url:'api/delete_sibiling',
-        data:{'username':username},
-        success: function (response) {
-                e.parentElement.remove();
-        }
-    })
-}
 
 {% endblock %}

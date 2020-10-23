@@ -1,72 +1,31 @@
 {% extends 'base.html' %}
-{% block title %}{{session['login_user']['username']}}{% endblock %}
+{% block title %}{{user['username']}}{% endblock %}
 {% block content %}
-
-
 <br/>
-<p><a href="/edit_biradari" class="btn btn-link">EDIT</a></p>
+{% if user['username'] == session['login_user']['username']%}
+<p class="text-right"><a href="/edit_biradari" class="btn btn-link">EDIT FAMILY</a></p>
+{% endif %}
 <div class="row">
-    <div class="col-lg-6">
-
-        <div class="card">
-            <div class="card-header">
-                <h5>PARENTS</h5>
-            </div>
-            <div class="list-group-flush">
-                <div class="list-group-item">
-                    <div class="row">
-                        <div class="col text-capitalize">Father</div>
-                        <div class="col"><a href="/profile/{{user['family']['father']['username']}}">{{user['family']['father']['name']}}</a>
-                            {% if user['family']['father']['confirmed'] == true %}
-                                <small class="text-success">(CONFIRM)</small>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="list-group-item">
-                    <div class="row">
-                        <div class="col text-capitalize">Mother</div>
-                        <div class="col"><a href="/profile/{{user['family']['mother']['username']}}">{{user['family']['mother']['name']}}</a>
-                            {% if user['family']['mother']['confirmed'] == true %}
-                                <small class="text-success">(CONFIRM)</small>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="list-group-item">
-                    <div class="row">
-                        <div class="col text-capitalize">Spouse</div>
-                        <div class="col"><a href="/profile/{{user['family']['spouse']['username']}}">{{user['family']['spouse']['name']}}</a>
-                            {% if user['family']['spouse']['confirmed'] == true %}
-                                <small class="text-success">(CONFIRM)</small>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-        </div>
-        </div>
-        <br/>
+    <div class="col-lg-4">
+        <p><img src="{{ url_for('static', filename ='img/default_profile_pic.png') }}" class="img-fluid"
+                alt="Responsive image"></p>
     </div>
-
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-header">
-                <h5>SIBILINGS</h5>
-            </div>
-            <div class="list-group-flush">
-
-                {% for sibiling in user['family']['sibilings']%}
-                <a class="list-group-item list-group-item-action" href="/profile/{{sibiling['username']}}">{{sibiling['name']}}
-                {% if sibiling['confirmed'] == true %}
-                            <small class="text-success">(CONFIRM)</small>
-                        {% endif %}
-                </a>
-                {% endfor %}
-
-            </div>
-        </div>
+    <div class="col-lg-8">
+        <h2 class="text-capitalize">{{user['full_name']}}</h2>
+        <p>
+            <a href="/profile/{{user['username']}}" class="btn btn-block btn-outline-primary">VIEW PROFILE</a>
+        </p>
     </div>
 </div>
+<div class="list-group">
+{%for person in user['biradari'] %}
+<a class="list-group-item list-group-item-action" href="/biradari/{{person['username']}}">
+        {{person['full_name']}}
+        <small class="float-right text-info text-uppercase">
+            {{person['relation']}}
+        </small>
+    </a>
+{% endfor %}
+</div>
+
 {% endblock %}

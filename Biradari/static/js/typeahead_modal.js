@@ -19,7 +19,7 @@ function submit_select_user_form(form) {
         success: function (response) {
                 html = ''
                 for (i in response) {
-                html += '<button value="'+response[i].username+'" onclick="result_list_select(this)" class="list-group-item list-group-item-action">'+response[i].first_name+'<br/><small>'+response[i].username+'</small></button>'
+                html += '<button value="'+response[i].username+'" onclick="result_list_select(this)" class="list-group-item list-group-item-action">'+response[i].first_name+'<small class="float-right">'+response[i].username+'</small></button>'
                 }
                 $(result_table).html(html);
         }

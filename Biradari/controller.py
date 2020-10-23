@@ -4,9 +4,9 @@ from bson import ObjectId
 import datetime
 
 
-client = pymongo.MongoClient("mongodb://localhost",27017)
+#client = pymongo.MongoClient("mongodb://localhost",27017)
 
-#client = pymongo.MongoClient("mongodb+srv://test:12345@cluster0.4luf0.mongodb.net/test?retryWrites=true&w=majority")
+client = pymongo.MongoClient("mongodb+srv://test:12345@cluster0.4luf0.mongodb.net/test?retryWrites=true&w=majority")
 db = client.test
 
 user_collection = db['users']
@@ -16,29 +16,37 @@ post_collection = db['posts']
 
 # function to register new user
 def register(data):
-    username = str.strip(data['username'])
-    password = str.strip(data['password'])
-    first_name = str.strip(data['first_name'])
-    last_name = str.strip(data['last_name'])
-    gender = str.strip(data['gender'])
-    dob = str.strip(data['dob'])
-    location = str.strip(data['location'])
-
+    user = {}
     # check if required filed is not blank
-    if '' in (username,password,first_name, last_name,gender,dob,location):
-        return False
-
-    # check user is already exist
-    query = user_collection.find_one({'username': username})
-    if query == None:
-        newuser = user_collection.insert_one({'username': username, 'password': password,
-                                              'first_name': first_name, 'last_name': last_name,
-                                              'gender': gender, 'location': location, 'dob': dob})
-
-        print('new user created with ID:' + str(newuser.inserted_id))
-        return True
+    empty_field = []
+    for i in (data):
+        if str.strip(data[i]) == '':
+            empty_field.append(i)
+        else:
+            user[i] = str.strip(data[i])
+    if len(empty_field)>0:
+        return {'result':False,'msg':'Empty Fields found:'+str(','.join(empty_field))}
     else:
-        return False
+        if user_collection.find_one({'username':user['username']}) == None:
+            user['type'] = 'real'
+            print('user created: '+str(user['username'])+' : '+str(user_collection.insert_one(user).inserted_id))
+            return {'result':True,'msg':'User created.'}
+        else:
+            return {'result':False,'msg':'username is already exist.'}
+
+# function to create virtual user
+def create_virtual_user(data):
+    user = {}
+    for i in (data):
+        if str.strip(data[i]) == '':
+            return {'result':False,'msg':'Fill all fields.'}
+        else:
+            user[i] = str.strip(data[i])
+    if user_collection.find_one({'username':data['username']}) == None:
+        print('virtual user created: ' + str(user['username']) + ' : ' + str(user_collection.insert_one(user).inserted_id))
+        return {'result': True, 'msg': 'Virtual User created.'}
+    else:
+        return {'result':False,'msg':'username already exist.'}
 
 
 # function to login user
@@ -46,18 +54,20 @@ def login(data):
 
     username = str.strip(data['username'])
     password = str.strip(data['password'])
-    if '' in (username, password):
-        return False
 
-    query = user_collection.find_one({'username': username, 'password': password})
-    if query == None:
-        return False
+    if '' in (username, password):
+        return {'result':False}
+
+    user = user_collection.find_one({'username': username, 'password': password})
+    if user == None:
+        return {'result':False}
     else:
-        query['_id'] = str(query['_id'])
-        query['full_name'] = query['first_name'] + ' ' + query['last_name']
-        session['login_user'] = query
+        user['_id'] = str(user['_id'])
+        user['full_name'] = user['first_name'] + ' ' + user['last_name']
+        session['login_user'] = user
         session['logged_in'] = True
-        return True
+        return {'result':True}
+
 
 
 # function to logout and clear session
@@ -213,15 +223,74 @@ def get_family(username):
             q = get_profile(user[relation]['username'])
             result[relation]['name'] = q['full_name']
 
-    if user['sibilings'] == None:
-        result['sibilings'] = None
-    else:
-        result['sibilings'] = user['sibilings']
-        i = 0
-        for sibiling in user['sibilings']:
-            q = get_profile(sibiling['username'])
-            result['sibilings'][i]['name'] = q['full_name']
-            i += 1
+    # add sibiling
+    result['sibilings'] = []
+    query = user_collection.find({"$and": [
+        {"username": {"$ne": user['username']}},
+        {"$or": [
+            {"father": {"username": user['father']['username']}},
+            {"mother": {"username": user['mother']['username']}}
+        ]}
+    ]}, {"_id": 0})
+    for person in query:
+        person['full_name'] = str(person['first_name']) + ' ' + str(person['last_name'])
+        result['sibilings'].append(person)
+
+    return result
+
+# function to get biradari
+def get_biradari(username):
+    user = get_profile(username)
+    result = []
+    father = None
+
+    for relation in ('father', 'mother', 'spouse'):
+        if not user[relation] == None:
+            q = get_profile(user[relation]['username'])
+            q['relation'] = relation
+            result.append(q)
+
+    # add sibiling
+    if 'father' in user and not user['father'] == None:
+        father = get_profile(user["father"]["username"])
+        query = user_collection.find({"$and": [
+            {"username": {"$ne": user['username']}},
+            {"$or": [
+                {"father": {"username": user['father']['username']}},
+                {"mother": {"username": user['mother']['username']}}
+            ]}
+        ]}, {"_id": 0})
+        for person in query:
+            q = get_profile(person['username'])
+            q['relation'] = "Brother" if q["gender"] == 'male' else "Sister"
+            result.append(q)
+
+    # add uncles and aunty
+    if not father == None and not father['father'] == None:
+        query = user_collection.find({"$and": [
+            {"username": {"$ne": user["father"]['username']}},
+            {"father": {"username": father["father"]['username']}}
+        ]}, {"_id": 0})
+
+        for person in query:
+            person['full_name'] = str(person['first_name']) + ' ' + str(person['last_name'])
+            person['relation'] = "uncle" if person['gender'] == 'male' else "aunty"
+            result.append(person)
+
+    # cousins
+    for person in result:
+        if person['relation'] in ('uncle','aunty'):
+            q = user_collection.find({"$and": [
+            {"username": {"$ne": user["father"]['username']}},
+            {"father": {"username": person['username']}}
+            ]}, {"_id": 0,"username":1})
+            for person in q:
+                q = get_profile(person['username'])
+                q['relation'] = "cousin brother" if q['gender'] == 'male' else "cousin sister"
+                result.append(q)
+
+
+
     return result
 
 
@@ -273,19 +342,11 @@ def get_user_posts(username):
 
 # function to get wall post list
 def get_wall_posts(username=None,newest_post_timestamp=None,oldest_post_timestamp=None):
-    login_user = get_profile(session['login_user']['username'])
     if username == None:
-        username_list = [login_user['username']]
-        #add more username to query posts
-        for relation in ('father','mother','spouse'):
-            if not login_user[relation] == None:
-                if not login_user[relation]['username'] in username_list:
-                    username_list.append(login_user[relation]['username'])
-        for sibiling in login_user['sibilings']:
-            if not sibiling['username'] in username_list:
-                username_list.append(sibiling['username'])
-    else:
-        username_list = [username]
+        username = session['login_user']['username']
+    username_list = [username]
+    for person in get_biradari(username):
+        username_list.append(person['username'])
 
     if not newest_post_timestamp == None:
         timestamp_query = datetime.datetime.strptime(newest_post_timestamp, '%Y-%m-%d %H:%M:%S.%f')

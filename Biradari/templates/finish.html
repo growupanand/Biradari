@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Finish Details{% endblock %}
+{% block content %}
+<br/>
+<p>Add your Father and Mother before continue in Biradari!</p>
+<form name="finish_form" onsubmit="submit_finish_form(this)">
+        <div class="form-group row">
+            <label class="col-lg-2 col-form-label">Father:</label>
+            <div class="col-lg-10">
+            {% if not 'father' in user %}
+                <a href="/add_father" class="btn btn-block btn-outline-primary">ADD</a>
+            {% else %}
+                <a class="btn btn-link" href="/profile/{{user['father']['username']}}">{{user['father']['username']}}</a>
+                <a href="/add_father" class="btn btn-outline-primary">CHANGE</a>
+            {% endif %}
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-lg-2 col-form-label">Mother:</label>
+            <div class="col-lg-10">
+            {% if not 'mother' in user %}
+                <a href="/add_mother" class="btn btn-block btn-outline-primary">ADD</a>
+            {% else %}
+                <a class="btn btn-link" href="/profile/{{user['mother']['username']}}">{{user['mother']['username']}}</a>
+                <a href="/add_mother" class="btn btn-outline-primary">CHANGE</a>
+            {% endif %}
+            </div>
+        </div>
+
+    <div class="form-group">
+        <button type="button" class="btn btn-primary btn-block btn-lg">CONTINUE</button>
+    </div>
+
+</form>
+
+{% endblock %}
+
+{% block javascript %}
+
+//function submit_register_form to ajax
+function submit_register_form(form) {
+    event.preventDefault();
+    var data = $(this).serializeArray();
+    $.ajax({
+        type: 'POST',
+        url: 'api/register',
+        data: $(form).serialize(),
+        dataType: 'json',
+        success: function(response) {
+            if (response.result == true) {
+                alert('user created successfully!');
+            }   else { alert('error: ' + response.msg) }
+        }
+    });
+}
+
+{% endblock %}

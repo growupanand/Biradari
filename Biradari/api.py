@@ -4,18 +4,43 @@ from Biradari import controller
 import json
 from bson.json_util import dumps
 
-@app.route('/api/<task>', methods=["POST", "GET"])
+
+@app.route('/api/<task>', methods=["POST"])
 def task(task):
     post_data = request.form
 
     if task == 'register':
-        result = controller.register(post_data)
-        return json.dumps({'usercreated':result})
+        return json.dumps(controller.register(post_data))
 
 
     if task == 'login':
-        result = controller.login(post_data)
-        return json.dumps({'loggedin':result})
+        return json.dumps(controller.login(post_data))
+
+    if task == 'create_father':
+        data = {}
+        data['first_name'] = post_data['first_name']
+        data['last_name'] = post_data['last_name']
+        data['gender'] = 'male'
+        data['owner'] = session.get('login_user')['username']
+        data['username'] = str(data['owner'])+'.'+str(data['first_name'])+str(data['last_name'])
+        data['type'] = 'virtual'
+        result = controller.create_virtual_user(data)
+        if result['result'] == True:
+            controller.update_father(data['username'])
+        return json.dumps(result)
+
+    if task == 'create_mother':
+        data = {}
+        data['first_name'] = post_data['first_name']
+        data['last_name'] = post_data['last_name']
+        data['gender'] = 'female'
+        data['owner'] = session.get('login_user')['username']
+        data['username'] = str(data['owner'])+'.'+str(data['first_name'])+str(data['last_name'])
+        data['type'] = 'virtual'
+        result = controller.create_virtual_user(data)
+        if result['result'] == True:
+            controller.update_mother(data['username'])
+        return json.dumps(result)
 
 
     if task == 'logout':

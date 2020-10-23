@@ -18,7 +18,35 @@
     {% block head %}{% endblock %}
   </head>
   <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+
+  <div class="modal" id="select_user_modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+
+          <div class="row">
+              <div class="col-lg-3">
+                  <div class="form-group">
+                      <button data-dismiss="modal" class="btn btn-outline-dark">CLOSE</button>
+                  </div>
+              </div>
+              <div class="col-lg-9">
+                  <form name="select_user_form" onsubmit="submit_select_user_form(this)">
+                      <div class="row">
+                        <div class="col-lg-8 form-group"><input class="form-control" type="text" placeholder="Type Name or username" name="query"/></div>
+                        <div class="col-lg-4 form-group"><button type="submit" class="btn btn-primary btn-block">FIND</button> </div>
+                      </div>
+                  </form>
+              </div>
+          </div>
+              <div class="list-group" id="query_result_list">
+              </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <a class="navbar-brand" href="/">HOME</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
@@ -32,11 +60,8 @@
       <li class="nav-item">
         <a class="nav-link" href="/biradari">Biradari</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/requests">Requests</a>
-      </li>
     </ul>
-    <span class="navbar-text ml-auto">Welcome: <b>{{session['login_user']['full_name']}}</b> | <button class="btn btn-dark" onclick="logout()">Logout</button></span>
+    <span class="navbar-text ml-auto"><b>{{session['login_user']['full_name']}}</b> | <button class="btn btn-dark" onclick="logout()">Logout</button></span>
     {% else %}
     <ul class="navbar-nav ml-auto">
       <li class="nav-item">
@@ -72,7 +97,7 @@
     event.preventDefault();
     $.ajax({
       type: 'POST',
-      url: 'api/logout',
+      url: '/api/logout',
       dataType: 'json',
       success: function(response) {
         if (response.result == true) {window.location.replace("/");}

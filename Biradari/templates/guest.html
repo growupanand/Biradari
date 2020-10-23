@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% block title %}Login{% endblock %}
+{% block title %}Welcome{% endblock %}
 {% block content %}
 <br/>
-<h3>Login</h3>
+<h3 class="text-center">BIRADARI</h3>
 <form name="login_form" onsubmit="submit_login_form(this)">
     <input type="hidden" name="next" value="{{ request.args.get('next', 'home') }}"/>
         <div class="form-group row">
@@ -20,7 +20,8 @@
     <div class="form-group">
         <button type="submit" class="btn btn-primary btn-block btn-lg">LOGIN</button>
     </div>
-
+<p class="text-center">OR</p>
+  <p><a class="btn btn-block btn-outline-primary" href="/register">REGISTER</a></p>
 </form>
 
 {% endblock %}
