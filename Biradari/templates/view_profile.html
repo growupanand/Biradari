@@ -1,73 +1,151 @@
 {% extends 'base.html' %}
 {% block title %}{{user['username']}}{% endblock %}
 {% block content %}
-<br/>
-<div class="row">
-    <div class="col-lg-4">
-        <p><img src="{{ url_for('static', filename ='img/default_profile_pic.png') }}" class="img-fluid"
-                alt="Responsive image"></p>
-    </div>
-    <div class="col-lg-8">
-        <h2 class="text-capitalize">{{user['full_name']}}</h2>
-        <p>
-            <button class="btn btn-block btn-outline-primary">MESSAGE</button>
-        </p>
-        <ul class="nav nav-pills nav-fill" id="myTab" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="posts-tab" data-toggle="tab" href="#posts" role="tab"
-                   aria-controls="posts" aria-selected="true">POSTS</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="about-tab" data-toggle="tab" href="#about" role="tab" aria-controls="about"
-                   aria-selected="false">ABOUT</a>
-            </li>
-        </ul>
-        <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">
-                <ul id="posts_list" class="list-group list-group-flush">
-                </ul>
+<div class="mt-2 mb-2">
+    <h1 class="text-capitalize">{{user['full_name']}}</h1>
+    <hr/>
+    <div id="alert"></div>
+    <div class="row">
+        <div class="col-lg-4">
+            <p>
+                <img src="{{ url_for('static', filename ='img/default_profile_pic.png') }}" class="img-fluid"
+                     alt="Responsive image">
+            </p>
+            <p>
+                {% if is_biradari %}
+                <button onclick="remove_biradari(this, '{{user['username']}}')" class="btn btn-block btn-danger">REMOVE
+                    BIRADARI
+                </button>
+                {% else %}
+                <button onclick="add_biradari(this, '{{user['username']}}')" class="btn btn-primary btn-block">ADD
+                    BIRADARI
+                </button>
+                {% endif %}
+            </p>
+            <h4>About</h4>
+            <table class="table">
+                <tr>
+                    <th>Gender</th>
+                    <td>{{user['gender']}}</td>
+                </tr>
+                <tr>
+                    <th>Date of Birth</th>
+                    <td>{{user['dob']}}</td>
+                </tr>
+                <tr>
+                    <th>Location</th>
+                    <td>{{user['location']}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-lg-8">
+            <div class="nav nav-fill nav-pills" id="myTab" role="tablist">
+                    <a class="nav-link active" id="posts-tab" data-toggle="tab" href="#posts" role="tab"
+                       aria-controls="posts" aria-selected="true">POSTS</a>
+                    <a class="nav-link" id="about-tab" data-toggle="tab" href="#about" role="tab"
+                       aria-controls="about"
+                       aria-selected="false">BIRADARI
+                    </a>
             </div>
-            <div class="tab-pane fade" id="about" role="tabpanel" aria-labelledby="about-tab">
-                <ul class="list-group list-group-flush">
-                    {% for item in ('gender','dob','location') %}
-                    <li class="list-group-item">
-                        <div class="row">
-                            <div class="col text-uppercase">{{item}}</div>
-                            <div class="col">{{user[item]}}</div>
-                        </div>
-                    </li>
-                    {% endfor %}
-                </ul>
+            <br/>
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">
+                    <ul id="posts_list" class="list-group list-group-flush">
+                    </ul>
+                    <p class="text-center">
+                        <button onclick="get_posts()" class="btn btn-secondary">Load More</button>
+                    </p>
+                </div>
+                <div class="tab-pane fade" id="about" role="tabpanel" aria-labelledby="about-tab">
+                    <p><small class="badge bg-secondary">{{biradari_list|length}}</small></p>
+                    <ul class="list-group list-group-flush">
+                        {% for person in biradari_list %}
+                        <a href="/profile/{{person['username']}}"
+                           class="text-capitalize list-group-item list-group-item-action">
+                            {{person['full_name']}}
+                        </a>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
         </div>
-
     </div>
 </div>
-
-
 {% endblock %}
 
-{% block javascript %}
-function get_posts() {
-$.ajax({
-url: '/api/get_posts',
-type: 'POST',
-data: {'username':'{{user['username']}}'},
-dataType: 'JSON',
-success: function (response) {
+{% block foot %}
+<script>
+    last_timestamp = 'None'
 
-if (response.length > 0) {
-newest_post_timestamp = response[0].raw_timestamp;
-for (i in response) {
-html = '<li class="list-group-item"><small class="text-muted">'+format_datetime(response[i].raw_timestamp)+'</small><br/>'+response[i].content+'</li>'
-$(html).hide().appendTo('#posts_list').slideDown();
-oldest_post_timestamp = response[i].raw_timestamp;
-}
+    function get_posts() {
+        $.ajax({
+            url: '/api/get_posts/{{user['username']}}',
+            data: {'limit': '10', 'last_timestamp': last_timestamp},
+            type: 'POST',
+            dataType: 'JSON',
+            success: function (response) {
 
-}
-}
-})
-}
+                if (response.length > 0) {
+                    for (i in response) {
+                        html = '<li class="list-group-item mb-2"><p class="text-break">' + response[i].content + '</p>' +
+                            '<p class="text-right"><small class="text-muted">' + format_datetime(response[i].timestamp) + '</small></p> </li>'
+                        $(html).hide().appendTo('#posts_list').slideDown();
+                        last_timestamp = response[i].timestamp;
+                    }
+                    console.log(last_timestamp)
 
-get_posts();
+                }
+            }
+        })
+    }
+
+
+    function add_biradari(e, username) {
+        e.disabled = true
+        $.ajax({
+            url: '/api/add_biradari',
+            type: 'POST',
+            data: {'username': username},
+            dataType: 'JSON',
+            success: function (response) {
+                if (response.result == true) {
+                    $(e).replaceWith('<button onclick="remove_biradari(this, \'{{user['username']}}\')" class="btn btn-block btn-danger">REMOVE BIRADARI</button>'
+                )
+                    show_alert('{{user['full_name']}} successfully added in Biradari.', 'success'
+                )
+                } else {
+                    show_alert(response.msg, 'danger')
+                }
+            },
+            complete: function () {
+                e.disabled = false
+            }
+        })
+    }
+
+    function remove_biradari(e, username) {
+        e.disabled = true
+        $.ajax({
+            url: '/api/remove_biradari',
+            type: 'POST',
+            data: {'username': username},
+            dataType: 'JSON',
+            success: function (response) {
+                if (response.result == true) {
+                    $(e).replaceWith('<button onclick="add_biradari(this, \'{{user['username']}}\')" class="btn btn-block btn-primary">ADD BIRADARI</button>'
+                )
+                    show_alert('{{user['full_name']}} successfully removed from Biradari.', 'success'
+                )
+                } else {
+                    show_alert(response.msg, 'danger')
+                }
+            },
+            complete: function () {
+                e.disabled = false
+            }
+        })
+    }
+
+    get_posts();
+</script>
 {% endblock %}
