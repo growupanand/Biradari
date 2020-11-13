@@ -7,8 +7,6 @@ from Biradari.user import user
 @app.route('/')
 def index_page():
     if session.get('logged_in') == True:
-        if not 'father' in session.get('user') or not 'mother' in session.get('user'):
-            return render_template('finish.html', user=session.get('user'))
         user_data = user(session['user']['username'])
         posts = user_data.get_posts(limit=10, get_wall_posts=True)
         first_timestamp = posts[0]['timestamp'] if len(posts)>0 else None
