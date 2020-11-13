@@ -6,109 +6,97 @@
     <div class="col-sm-7 ">
         <form onsubmit="wall_post_submit(this)">
             <div class="row">
-                <div class="form-group  col-sm-8"><textarea name="content" class="form-control"></textarea></div>
-                <div class="form-group col-sm-4"><button type="submit" class="btn btn-block btn-primary">POST</button></div>
+                <div class="col-md-8"><p>
+                    <textarea name="content" class="form-control"></textarea></p>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-lg btn-block btn-primary">POST</button>
+                </div>
             </div>
-    </form>
-        <div class="form-group">
-            <button class="btn btn-block btn-sm btn-outline-primary" type="button" onclick="get_new_posts()">REFRESH</button>
-        </div>
-        <ul id="posts_list" class="list-group">
+        </form>
+        <p class="text-right">
+            <button class="btn btn-secondary" type="button" onclick="get_new_posts()">Refresh</button>
+        </p>
+        <ul id="posts_list" class="list-group list-group-flush">
+            {% for post in posts %}
+            <li class="list-group-item mb-2">
+                <p>
+                    <a class="text-capitalize" href="/profile/{{post['username']}}">{{post['full_name']}}</a>
+                    <small class="float-right text-muted">{{post['timestamp']}}</small>
+                </p>
+                <p class="text-break">{{post['content']}}</p>
+            </li>
+            {% endfor %}
         </ul>
-        <br/>
-        <div class="form-group text-center">
-            <button class="btn btn-block btn-sm btn-primary" type="button" onclick="get_old_posts()">MORE</button>
-        </div>
+        <p class="text-center">
+            <button onclick="get_old_posts()" class="btn btn-secondary">Load More</button>
+        </p>
     </div>
 
-    </div>
+</div>
 
 {% endblock %}
 
-{% block javascript %}
-document.body.style.backgroundColor= "#f8f9fa"
+{% block foot %}
+<script>
+    last_timestamp = '{{last_timestamp}}'
+    first_timestamp = '{{first_timestamp}}'
 
-newest_post_timestamp = null
-oldest_post_timestamp = null
-
-
-function get_posts() {
-$.ajax({
-url: '/api/get_posts',
-dataType: 'JSON',
-success: function (response) {
-
-if (response.length > 0) {
-newest_post_timestamp = response[0].raw_timestamp;
-for (i in response) {
-html = '<li class="list-group-item"><p><a class="text-capitalize" href="/profile/'+ response[i].username + '">'+response[i].user_full_name+'</a><small class="float-right text-muted">'+format_datetime(response[i].raw_timestamp)+'</small><br/>'+response[i].content+'</p></li>'
-$(html).hide().appendTo('#posts_list').slideDown();
-oldest_post_timestamp = response[i].raw_timestamp;
-}
-
-}
-}
-})
-}
-
-function get_new_posts() {
-$.ajax({
-url: '/api/get_posts',
-type: 'POST',
-data: {'newest_post_timestamp':newest_post_timestamp},
-dataType: 'JSON',
-success: function (response) {
-    if (response.length > 0) {
-        newest_post_timestamp = response[0].raw_timestamp;
-        i = response.length
-        console.log(response)
-        for (x in response) {
-        i = i-1;
-        html = '<li class="list-group-item"><p><small class="float-right">'+format_datetime(response[i].raw_timestamp)+'</small><a class="text-capitalize" href="/profile/'+ response[i].username + '">'+response[i].user_full_name+'</a></p><p>'+response[i].content+'</p></li>'
-        $(html).hide().prependTo('#posts_list').slideDown();
-        }
-    }
-}
-})
-}
-
-function get_old_posts() {
-$.ajax({
-url: '/api/get_posts',
-type: 'POST',
-data: {'oldest_post_timestamp':oldest_post_timestamp},
-dataType: 'JSON',
-success: function (response) {
-    if (response.length > 0) {
-        console.log(response)
-        for (i in response) {
-        html = '<li class="list-group-item"><p><small class="float-right">'+format_datetime(response[i].raw_timestamp)+'</small><a class="text-capitalize" href="/profile/'+ response[i].username + '">'+response[i].user_full_name+'</a></p><p>'+response[i].content+'</p></li>'
-        $(html).hide().appendTo('#posts_list').slideDown();
-        oldest_post_timestamp = response[i].raw_timestamp;
-        }
-    }
-}
-})
-}
-
-
-function wall_post_submit(e) {
-    event.preventDefault();
-    content = e.content.value;
-    $.ajax({
-        url: '/api/post',
-        data: {'content':content},
-        type: 'POST',
-        dataType: 'JSON',
-        success: function (response) {
-                    if (response.result == true) {
-                    get_new_posts()
+    function get_old_posts() {
+        $.ajax({
+            url: '/api/get_posts',
+            data: {'get_wall_posts': true, 'limit': '10', 'last_timestamp': last_timestamp},
+            type: 'POST',
+            dataType: 'JSON',
+            success: function (response) {
+                if (response.length > 0) {
+                    for (i in response) {
+                        html = '<li class="list-group-item mb-2"><p><a class="text-capitalize" href="/profile/' + response[i]['username'] + '">' + response[i]['full_name'] + '</a><small class="float-right text-muted">' + format_datetime(response[i]['timestamp']) + '</small> </p><p class="text-break">' + response[i]['content'] + '</p> </li>'
+                        $(html).hide().appendTo('#posts_list').slideDown();
+                        last_timestamp = response[i].timestamp;
                     }
-                    else {alert(response.msg)}
                 }
-    })
-}
+            }
+        })
+    }
 
-get_posts()
 
+    function get_new_posts() {
+        $.ajax({
+            url: '/api/get_posts',
+            data: {'get_wall_posts': true, 'limit': '10', 'first_timestamp': first_timestamp},
+            type: 'POST',
+            dataType: 'JSON',
+            success: function (response) {
+                if (response.length > 0) {
+                    for (i in response) {
+                        html = '<li class="list-group-item mb-2"><p><a class="text-capitalize" href="/profile/' + response[i]['username'] + '">' + response[i]['full_name'] + '</a><small class="float-right text-muted">' + format_datetime(response[i]['timestamp']) + '</small> </p><p class="text-break">' + response[i]['content'] + '</p> </li>'
+                        $(html).hide().prependTo('#posts_list').slideDown();
+                        first_timestamp = response[i].timestamp;
+                    }
+                }
+            }
+        })
+    }
+
+
+    function wall_post_submit(e) {
+        event.preventDefault();
+        content = e.content.value;
+        $.ajax({
+            url: '/api/post',
+            data: {'content': content},
+            type: 'POST',
+            dataType: 'JSON',
+            success: function (response) {
+                if (response.result == true) {
+                    get_new_posts()
+                } else {
+                    alert(response.msg)
+                }
+            }
+        })
+    }
+
+</script>
 {% endblock %}

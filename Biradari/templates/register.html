@@ -1,80 +1,59 @@
 {% extends 'base.html' %}
 {% block title %}Register New User{% endblock %}
 {% block content %}
-<br/>
-<h3>Fill Information</h3>
-<form name="register_form" onsubmit="submit_register_form(this)">
-        <div class="form-group row">
-        <label class="col-lg-2 col-form-label" for="username">Username</label>
-        <div class="col-lg-6">
-            <input class="form-control" id="username" name="username" type="text" required/>
-        </div>
-        </div>
-        <div class="form-group row">
-        <label class="col-lg-2 col-form-label" for="password">Password</label>
-        <div class="col-lg-6">
-            <input class="form-control" id="password" name="password" type="password" required/>
-        </div>
-        </div>
-    <div class="form-group row">
-        <label class="col-lg-2 col-form-label" for="first_name">First Name</label>
-        <div class="col-lg-5">
-            <input class="form-control" id="first_name" name="first_name" type="text" placeholder="First Name" required/>
-        </div>
-    </div>
-    <div class="form-group row">
-        <label class="col-lg-2 col-form-label" for="last_name">Last Name</label>
-        <div class="col-sm-6">
-            <input class="form-control" id="last_name" name="last_name" type="text" placeholder="Last Name" required/>
-        </div>
-    </div>
-    <div class="form-group row">
-        <label class="col-sm-2 col-form-label" for="gender">Gender</label>
-        <div class="col-sm-6">
-            <select class="form-control" id="gender" name="gender" required>
+<div class="row justify-content-center">
+    <div class="col-10 col-md-8 col-lg-6">
+        <p class="text-center"><h1>Create new account</h1></p>
+        <p class="text-center">Already have an account ? - <a href="/login" class="btn btn-link">Login Here</a> </p>
+        <div id="alert"></div>
+        <form name="register_form" onsubmit="submit_register_form(this)">
+            <label class="form-label" for="username">Username</label>
+            <input class="form-control mb-3" id="username" name="username" type="text" required/>
+            <label class="form-label" for="password">Password</label>
+            <input class="form-control mb-3" id="password" name="password" type="password" required/>
+            <label class="form-label" for="first_name">First Name</label>
+            <input class="form-control mb-3" id="first_name" name="first_name" type="text" placeholder="First Name"
+                   required/>
+            <label class="form-label" for="last_name">Last Name</label>
+            <input class="form-control mb-3" id="last_name" name="last_name" type="text" placeholder="Last Name" required/>
+            <label class="form-label" for="gender">Gender</label>
+            <select class="form-control mb-3" id="gender" name="gender" required>
                 <option value="False" selected>Select Gender</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
             </select>
-        </div>
+            <label class="form-label" for="dob">Date of Birth</label>
+            <input class="form-control mb-3" id="dob" name="dob" type="date" required/>
+            <label class="form-label" for="location">Location</label>
+            <input class="form-control mb-3" id="location" name="location" type="text" required/>
+            <button type="submit" class="btn btn-primary btn-block btn-lg">REGISTER</button>
+        </form>
     </div>
-    <div class="form-group row">
-        <label class="col-sm-2 col-form-label" for="dob">Date of Birth</label>
-        <div class="col-sm-6">
-            <input class="form-control" id="dob" name="dob" type="date" required/>
-        </div>
-    </div>
-    <div class="form-group row">
-        <label class="col-sm-2 col-form-label" for="location">Location</label>
-        <div class="col-sm-6">
-            <input class="form-control" id="location" name="location" type="text" required/>
-        </div>
-    </div>
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary btn-block btn-lg">REGISTER</button>
-    </div>
-
-</form>
-
+</div>
 {% endblock %}
 
-{% block javascript %}
-
+{% block foot %}
+<script>
 //function submit_register_form to ajax
 function submit_register_form(form) {
     event.preventDefault();
-    var data = $(this).serializeArray();
+    data = $(form).serialize()
+    $("form :input").prop("disabled", true);
     $.ajax({
         type: 'POST',
-        url: 'api/register',
-        data: $(form).serialize(),
+        url: '/api/register',
+        data: data,
         dataType: 'json',
         success: function(response) {
             if (response.result == true) {
-                alert('user created successfully!');
-            }   else { alert('error: ' + response.msg) }
+                show_alert('user created successfully!', 'success');
+            }   else { show_alert('error:\n' + response.msg, 'danger') }
+        },
+        complete: function() {
+            $("form :input").prop("disabled", false);
         }
+
     });
 }
-
+</script>
 {% endblock %}

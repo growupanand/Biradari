@@ -1,31 +1,18 @@
 {% extends 'base.html' %}
 {% block title %}{{user['username']}}{% endblock %}
 {% block content %}
-<br/>
-{% if user['username'] == session['login_user']['username']%}
-<p class="text-right"><a href="/edit_biradari" class="btn btn-link">EDIT FAMILY</a></p>
-{% endif %}
-<div class="row">
-    <div class="col-lg-4">
-        <p><img src="{{ url_for('static', filename ='img/default_profile_pic.png') }}" class="img-fluid"
-                alt="Responsive image"></p>
-    </div>
-    <div class="col-lg-8">
-        <h2 class="text-capitalize">{{user['full_name']}}</h2>
-        <p>
-            <a href="/profile/{{user['username']}}" class="btn btn-block btn-outline-primary">VIEW PROFILE</a>
-        </p>
+<div class="mt-2 mb-2">
+    <h1>Biradari List</h1>
+    <hr/>
+    <div id="alert"></div>
+    <p><a class="btn btn-outline-primary" href="/search">Find New Person</a></p>
+    <p><span class="badge bg-secondary">{{biradari_list|length}}</span> </p>
+    <div class="list-group">
+        {% for person in biradari_list %}
+        <a class="text-capitalize list-group-item list-group-item-action" href="/profile/{{person['username']}}">
+            {{person['full_name']}}
+        </a>
+        {% endfor %}
     </div>
 </div>
-<div class="list-group">
-{%for person in user['biradari'] %}
-<a class="list-group-item list-group-item-action" href="/biradari/{{person['username']}}">
-        {{person['full_name']}}
-        <small class="float-right text-info text-uppercase">
-            {{person['relation']}}
-        </small>
-    </a>
-{% endfor %}
-</div>
-
 {% endblock %}

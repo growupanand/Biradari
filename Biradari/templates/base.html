@@ -1,112 +1,136 @@
 {% set css = ['css/bootstrap.min.css'] %}
 {% set js = ['js/jquery-3.5.1.min.js','js/popper.min.js','js/bootstrap.min.js','js/typeahead_modal.js'] %}
 
-
 <html lang="en">
-  <head>
+<head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
     {% for item in css %}
-      <link rel="stylesheet" href="{{ url_for('static', filename =item) }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename =item) }}"/>
     {% endfor %}
 
     <title>Biradari | {% block title %}{% endblock %}</title>
-
+    <style>
+        body {
+            background-color: #efefef;
+        }
+    </style>
     {% block head %}{% endblock %}
-  </head>
-  <body>
+</head>
+<body>
 
-  <div class="modal" id="select_user_modal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-body">
+<div class="modal" id="select_user_modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
 
-          <div class="row">
-              <div class="col-lg-3">
-                  <div class="form-group">
-                      <button data-dismiss="modal" class="btn btn-outline-dark">CLOSE</button>
-                  </div>
-              </div>
-              <div class="col-lg-9">
-                  <form name="select_user_form" onsubmit="submit_select_user_form(this)">
-                      <div class="row">
-                        <div class="col-lg-8 form-group"><input class="form-control" type="text" placeholder="Type Name or username" name="query"/></div>
-                        <div class="col-lg-4 form-group"><button type="submit" class="btn btn-primary btn-block">FIND</button> </div>
-                      </div>
-                  </form>
-              </div>
-          </div>
-              <div class="list-group" id="query_result_list">
-              </div>
-      </div>
+                <div class="row">
+                    <div class="col-lg-3">
+                        <div class="form-group">
+                            <button data-dismiss="modal" class="btn btn-outline-dark">CLOSE</button>
+                        </div>
+                    </div>
+                    <div class="col-lg-9">
+                        <form name="select_user_form" onsubmit="submit_select_user_form(this)">
+                            <div class="row">
+                                <div class="col-lg-8 form-group"><input class="form-control" type="text"
+                                                                        placeholder="Type Name or username"
+                                                                        name="query"/></div>
+                                <div class="col-lg-4 form-group">
+                                    <button type="submit" class="btn btn-primary btn-block">FIND</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="list-group" id="query_result_list">
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <a class="navbar-brand" href="/">HOME</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNav">
-    {% if session['logged_in'] %}
-    <ul class="navbar-nav">
-      <li class="nav-item">
-        <a class="nav-link" href="/profile">Profile</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/biradari">Biradari</a>
-      </li>
-    </ul>
-    <span class="navbar-text ml-auto"><b>{{session['login_user']['full_name']}}</b> | <button class="btn btn-dark" onclick="logout()">Logout</button></span>
-    {% else %}
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item">
-        <a class="nav-link" href="/login">Log In</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/register">Register</a>
-      </li>
-    </ul>
-    {% endif %}
-  </div>
+{% if session['logged_in'] %}
+<nav class="navbar navbar-expand-md navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">HOME</a>
+        <span class="navbar-brand text-capitalize">{{session['user']['full_name']}}</span>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse text-uppercase" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/profile">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/biradari">Biradari</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/search">Search</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link bg-light text-dark" href="/logout">LOGOUT</a>
+                </li>
+            </ul>
+        </div>
+    </div>
 </nav>
+{% endif %}
+
 <div class="container">
-  {% block content %}{% endblock %}
+    {% block content %}{% endblock %}
 </div>
-      <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    {% for item in js %}
-       <script src="{{url_for('static', filename=item)}}"></script>
-    {% endfor %}
-  <script>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+{% for item in js %}
+<script src="{{url_for('static', filename=item)}}"></script>
+{% endfor %}
+<script>
+    //function for display alert box
+    function show_alert(msg, type = 'secondary') {
+        $("#alert").hide();
+        document.getElementById('alert').innerText = msg;
+        document.getElementById('alert').className = 'alert alert-' + type;
+        $("#alert").slideDown();
+    }
 
-  function format_datetime(timestamp) {
-  t = new Date(Date.parse(timestamp))
-  new_timestamp = ''
-  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  new_timestamp += t.getDate() + '/' + months[t.getMonth()] + '/' + t.getFullYear()
-  return new_timestamp
-  }
+    //function for hide alert box
+    function hide_alert() {
+        $("#alert").hide();
+    }
 
-  {% if session['logged_in'] == True %}
-  function logout() {
-    event.preventDefault();
-    $.ajax({
-      type: 'POST',
-      url: '/api/logout',
-      dataType: 'json',
-      success: function(response) {
-        if (response.result == true) {window.location.replace("/");}
-      }
-    })
-  }
-  {% endif %}
-  {% block javascript %}{% endblock %}
+
+    function format_datetime(timestamp) {
+        t = new Date(Date.parse(timestamp))
+        new_timestamp = ''
+        var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        new_timestamp += t.getDate() + '/' + months[t.getMonth()] + '/' + t.getFullYear() + ' - ' + t.getHours() + ':' + t.getMinutes()
+        return new_timestamp
+    }
+
+    //function to logout user and clear session
+    function logout() {
+        event.preventDefault();
+        $.ajax({
+            type: 'POST',
+            url: '/api/logout',
+            dataType: 'json',
+            success: function (response) {
+                if (response.result == true) {
+                    window.location.replace("/");
+                }
+            }
+        })
+    }
+
 </script>
-  {% block foot %}{% endblock %}
-  </body>
+{% block foot %}{% endblock %}
+</body>
 </html>

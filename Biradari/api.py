@@ -1,20 +1,132 @@
-from Biradari import app
+from Biradari import app, controller, datetime, stringtotimestamp
 from flask import request, session
-from Biradari import controller
 import json
 from bson.json_util import dumps
+from Biradari.user import user
+
+
+@app.route('/api/login', methods=["POST"])
+def login_api():
+    username = request.form['username']
+    password = request.form['password']
+    result = user(username).login(password)
+    return json.dumps(result)
+
+
+@app.route('/api/register', methods=['POST'])
+def register_api():
+    return json.dumps(user().register(request.form))
+
+
+@app.route('/api/logout')
+def logout_api():
+    return json.dumps(user().logout())
+
+
+@app.route('/api/get_posts/<username>', methods=['GET', 'POST'])
+@app.route('/api/get_posts', methods=['GET', 'POST'])
+def get_posts_api(username = None):
+    if username == None or username == session['user']['username']:
+        user_data = user(session['user']['username'])
+    else:
+        user_data = user(username)
+    limit = request.form.get('limit', 0)
+    before = None
+    last_timestamp = request.form.get('last_timestamp', None)
+    if not last_timestamp in (None, 'None'):
+        before = stringtotimestamp(last_timestamp)
+    after = None
+    first_timestamp = request.form.get('first_timestamp', None)
+    if not first_timestamp in (None, 'None'):
+        after = stringtotimestamp(first_timestamp)
+    get_wall_posts = request.form.get('get_wall_posts', False)
+    posts = user_data.get_posts(limit=limit, before=before, after = after, get_wall_posts=get_wall_posts)
+    return json.dumps(posts)
+
+
+@app.route('/api/post', methods=['POST'])
+def post_api():
+    content = request.form['content']
+    result = user(session['user']['username']).post(content)
+    return json.dumps(result)
+
+
+@app.route('/api/update_profile', methods=['POST'])
+def update_profile_api():
+    result = {}
+    result['result'] = False
+    updated_data = {}
+    empty_field = []
+    for field in ('first_name', 'last_name', 'gender', 'location', 'dob'):
+        data = request.form.get(field, None)
+        if data == None or str.strip(data) == '':
+            empty_field.append(field)
+        else:
+            updated_data[field] = str.strip(data)
+    if len(empty_field)>0:
+        result['msg'] = 'Field cannot be Empty - ' + ', '.join(empty_field)
+    else:
+        result = user(session['user']['username']).update_profile(updated_data)
+    return json.dumps(result)
+
+
+@app.route('/api/delete_post', methods=['POST'])
+def delete_post_api():
+    result = {}
+    result['result'] = False
+    id = request.form.get('id', None)
+    if id == None or str.strip(id) == '':
+        result['msg'] = 'ID not set'
+    else:
+        result = user(session['user']['username']).delete_post(id)
+    return result
+
+
+@app.route('/api/add_biradari', methods=['POST'])
+def add_biradari_api():
+    result = {}
+    result['result'] = False
+    username = request.form.get('username', None)
+    if username == None or str.strip(username) == '':
+        result['msg'] = 'Provide username.'
+    else:
+        result = user(session['user']['username']).add_biradari(username)
+    return result
+
+
+@app.route('/api/remove_biradari', methods=['POST'])
+def remove_biradari_api():
+    result = {}
+    result['result'] = False
+    username = request.form.get('username', None)
+    if username == None or str.strip(username) == '':
+        result['msg'] = 'Provide username.'
+    else:
+        result = user(session['user']['username']).remove_biradari(username)
+    return result
+
+
+@app.route('/api/search_person', methods=['POST'])
+def search_person_api():
+    result = {}
+    result['result'] = False
+    query = request.form.get('query', None)
+    if query == None or str.strip(query) == '':
+        result['msg'] = 'Type something for search.'
+    else:
+        result['result'] = True
+        result['data'] = []
+        for i in user(session['user']['username']).find_person(query):
+            result['data'].append(i)
+    return result
+
+
 
 
 @app.route('/api/<task>', methods=["POST"])
 def task(task):
     post_data = request.form
 
-    if task == 'register':
-        return json.dumps(controller.register(post_data))
-
-
-    if task == 'login':
-        return json.dumps(controller.login(post_data))
 
     if task == 'create_father':
         data = {}
@@ -41,16 +153,6 @@ def task(task):
         if result['result'] == True:
             controller.update_mother(data['username'])
         return json.dumps(result)
-
-
-    if task == 'logout':
-        controller.logout()
-        return json.dumps({'result':True})
-
-
-    if task == 'update_profile':
-        controller.update_profile(post_data)
-        return json.dumps({'result':True})
 
 
     if task == 'query_user':
@@ -87,27 +189,7 @@ def task(task):
         controller.confirm_request(post_data['id'])
         return dumps({'result': True})
 
-    if task == 'post':
-        result = controller.post(post_data['content'])
-        return dumps(result)
-
-    if task == 'get_new_posts':
-        newest_post_timestamp = post_data['newest_post_timestamp']
-        posts = controller.get_new_wall_posts(newest_post_timestamp)
-        return dumps(posts)
-
-    if task == 'get_old_posts':
-        oldest_post_timestamp = post_data['oldest_post_timestamp']
-        posts = controller.get_old_wall_posts(oldest_post_timestamp)
-        return dumps(posts)
 
     return 'API function not found'
 
 
-@app.route('/api/get_posts', methods=["GET","POST"])
-def get_posts():
-    newest_post_timestamp = None if request.form.get('newest_post_timestamp') == '' else request.form.get('newest_post_timestamp')
-    oldest_post_timestamp = None if request.form.get('oldest_post_timestamp') == '' else request.form.get('oldest_post_timestamp')
-    username = request.form.get('username')
-    posts = controller.get_wall_posts(username=username,newest_post_timestamp=newest_post_timestamp,oldest_post_timestamp=oldest_post_timestamp )
-    return dumps(posts)

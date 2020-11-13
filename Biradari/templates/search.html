@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<div class="mt-2 mb-2">
+    <h1>Search Person</h1>
+    <hr/>
+    <div id="alert"></div>
+    <form name="search_form" onsubmit="search_person(this)">
+        <div class="row">
+            <div class="col-md-8">
+                <input name="query" placeholder="Name or username" type="text" class="mb-2 form-control" required/>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-block btn-primary">SEARCH</button>
+            </div>
+        </div>
+    </form>
+    <br/>
+    <h4>Result List <span id="result_count" class="badge bg-secondary">0</span></h4>
+    <div id="result_list" class="list-group">
+    </div>
+</div>
+
+<script>
+    function search_person(form) {
+        event.preventDefault()
+        $("form :input").prop("disabled", true);
+        result_count = 0
+        query = form.query.value
+        hide_alert()
+        $.ajax({
+            url: '/api/search_person',
+            data: {'query': query},
+            type: 'POST',
+            dataType: 'JSON',
+            success: function (response) {
+                if (response.result == true) {
+                    document.getElementById('result_count').textContent = 0
+                    document.getElementById('result_list').innerHTML = ''
+                    for (i in response.data) {
+                        result_count += 1
+                        data = response.data[i]
+                        document.getElementById('result_count').textContent = result_count
+                        html = '<a href="/profile/' + data.username + '" class="text-capitalize list-group-item list-group-item-action">' +
+                            data.full_name +
+                            '<br/><small class="text-muted">#'+data.username+'</small> </a>'
+                        $(html).hide().prependTo('#result_list').slideDown();
+                    }
+                } else {
+                    show_alert('Error\n' + response.msg, 'danger')
+                }
+            },
+        complete: function() {
+            $("form :input").prop("disabled", false);
+        }
+        })
+    }
+</script>
+{% endblock %}

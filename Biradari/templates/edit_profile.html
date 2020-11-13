@@ -1,98 +1,123 @@
 {% extends 'base.html' %}
-{% block title %}{{session['login_user']['username']}}{% endblock %}
+{% block title %}{{user['username']}}{% endblock %}
 {% block content %}
-<br/>
-<p><a class="btn btn-link" href="/profile">BACK</a></p>
-<h5 class="text-center">EDIT PROFILE</h5>
-
-<form name="update_profile_form" onsubmit="submit_update_profile_form(this)">
-    <div class="list-group list-group-flush">
-        <div class="list-group-item">
-            <div class="row">
-                <label class="col-lg text-uppercase ">username</label>
-                <div class="col-lg">
-                    <input class="form-control" type="text" value="{{user['username']}}" disabled>
-                </div>
-            </div>
-        </div>
-        <div class="list-group-item">
-            <div class="row">
-                <label class="col-lg text-uppercase ">First Name</label>
-                <div class="col-lg">
-                    <input name="first_name" class="form-control" type="text" value="{{user['first_name']}}"
-                           required>
-                </div>
-            </div>
-        </div>
-        <div class="list-group-item">
-            <div class="row">
-                <label class="col-lg text-uppercase ">Last Name</label>
-                <div class="col-lg">
-                    <input name="last_name" class="form-control" type="text" value="{{user['last_name']}}"
-                           required>
-                </div>
-            </div>
-        </div>
-        <div class="list-group-item">
-            <div class="row">
-                <label class="col-lg text-uppercase ">Gender</label>
-                <div class="col-lg">
-                    <select class="form-control" name="gender" required>
-                        {%for option in ('male', 'female') %}
-                        {% set selected = '' %}
-                        {% if option == user['gender'] %}
-                        {% set selected = 'selected'%}
-                        {% endif %}
-                        <option value="{{option}}" {{selected}}>{{option}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-        </div>
-        <div class="list-group-item">
-            <div class="row">
-                <label class="col-lg text-uppercase ">Date of Birth</label>
-                <div class="col-lg">
-                    <input name="dob" class="form-control" type="date" value="{{user['dob']}}" required>
-                </div>
-            </div>
-        </div>
-        <div class="list-group-item">
-            <div class="row">
-                <label class="col-lg text-uppercase ">Location</label>
-                <div class="col-lg">
-                    <input name="location" class="form-control" type="text" value="{{user['location']}}"
-                           required>
-                </div>
-            </div>
-        </div>
-        <div class="list-group-item">
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary btn-lg btn-block">UPDATE</button>
-        </div>
-        </div>
+<div class="mt-2 mb-2">
+<h1>
+    Edit Profile
+</h1>
+<hr/>
+<div class="row">
+    <div class="col-md-4">
+        <h2 class="text-capitalize text-center">{{user['full_name']}}</h2>
+        <p>
+        <img src="{{ url_for('static', filename ='img/default_profile_pic.png') }}" class="img-fluid"/>
+        </p>
     </div>
-</form>
+    <div class="col-md-8">
 
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <label class="col-md text-uppercase ">username</label>
+                    <div class="col-md">
+                        <input class="form-control" type="text" value="{{user['username']}}" disabled/>
+                    </div>
+                </div>
+            </div>
+        </div><br/>
+        <form name="update_profile_form" onsubmit="submit_update_profile_form(this)">
+            <div class="list-group list-group-flush">
+                <div class="list-group-item">
+                    <div class="row">
+                        <label class="col-md text-uppercase ">First Name</label>
+                        <div class="col-md">
+                            <input name="first_name" class="form-control" type="text" value="{{user['first_name']}}"
+                                   required />
+                        </div>
+                    </div>
+                </div>
+                <div class="list-group-item">
+                    <div class="row">
+                        <label class="col-md text-uppercase ">Last Name</label>
+                        <div class="col-md">
+                            <input name="last_name" class="form-control" type="text" value="{{user['last_name']}}"
+                                   required />
+                        </div>
+                    </div>
+                </div>
+                <div class="list-group-item">
+                    <div class="row">
+                        <label class="col-md text-uppercase ">Gender</label>
+                        <div class="col-md">
+                            <select class="form-control" name="gender" required>
+                                {%for option in ('male', 'female') %}
+                                {% set selected = '' %}
+                                {% if option == user['gender'] %}
+                                {% set selected = 'selected'%}
+                                {% endif %}
+                                <option value="{{option}}" {{selected}}>{{option}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="list-group-item">
+                    <div class="row">
+                        <label class="col-md text-uppercase ">Date of Birth</label>
+                        <div class="col-md">
+                            <input name="dob" class="form-control" type="date" value="{{user['dob']}}" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="list-group-item">
+                    <div class="row">
+                        <label class="col-md text-uppercase ">Location</label>
+                        <div class="col-md">
+                            <input name="location" class="form-control" type="text" value="{{user['location']}}"
+                                   required />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br/>
+            <div id="alert"></div>
+            <p>
+                <button type="submit" class="btn btn-primary btn-lg btn-block">UPDATE</button>
+            </p>
+        </form>
+    </div>
+</div>
+</div>
 {% endblock %}
 
-{% block javascript %}
-//function submit form to ajax
-function submit_update_profile_form(form) {
+{% block foot %}
+<script>
+    //function submit form to ajax
+    function submit_update_profile_form(form) {
 
-event.preventDefault();
-var data = $(this).serializeArray(); // convert form to array
-$.ajax({
-type: 'POST',
-url: 'api/update_profile',
-data: $(form).serialize(),
-dataType: 'json',
-success: function(response) {
-if (response.result == true) {window.location.replace("/profile")}
-else {alert(respose)}
-}
-});
+        event.preventDefault();
+        data = $(form).serialize()
+        $("form :input").prop("disabled", true);
+        $.ajax({
+            type: 'POST',
+            url: '/api/update_profile',
+            data: data,
+            dataType: 'json',
+            success: function (response) {
+                if (response.result == true) {
+                    show_alert('Updated Successfully.', 'success')
+                } else {
+                    show_alert('Error\n'+response.msg, 'danger')
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                show_alert(textStatus+' '+jqXHR.status+': '+errorThrown, 'warning');
+            },
+            complete: function () {
+                $("form :input").prop("disabled", false);
+            }
+        });
 
-}
-
+    }
+</script>
 {% endblock %}
